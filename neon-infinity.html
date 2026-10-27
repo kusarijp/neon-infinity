@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>NEON//INFINITY</title>
+<style>
+:root{
+  --h:190;
+  --bg:#03050e;
+  --panel:rgba(12,18,44,.58);
+  --card:rgba(16,24,58,.55);
+  --line:rgba(120,160,255,.18);
+  --line2:rgba(120,160,255,.34);
+  --text:#e9eeff;
+  --muted:#8c9bc6;
+  --cyan:#22e4ff;
+  --blue:#3b6bff;
+  --violet:#8a5cff;
+  --magenta:#ff3df0;
+  --good:#37f0b0;
+  --warn:#ffb347;
+  --bad:#ff5d7a;
+  --acc:hsl(var(--h) 100% 60%);
+  --acc2:hsl(calc(var(--h) + 70) 100% 66%);
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Roboto Mono",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);
+  font-family:"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Noto Sans JP",system-ui,sans-serif;
+  font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%}
+body{background:
+  radial-gradient(1200px 700px at 12% -10%,rgba(60,90,255,.20),transparent 60%),
+  radial-gradient(900px 600px at 100% 10%,rgba(138,92,255,.16),transparent 60%),
+  radial-gradient(900px 700px at 50% 120%,rgba(255,61,240,.10),transparent 60%),
+  var(--bg);background-attachment:fixed}
+button{font:inherit;color:inherit;cursor:pointer}
+h1,h2,h3,p{margin:0}
+.muted{color:var(--muted)}
+small{font-size:12px}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+
+/* top bar */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  max-width:1280px;margin:0 auto;padding:14px 16px 0}
+.logo{font-weight:800;letter-spacing:.14em;font-size:18px;
+  background:linear-gradient(90deg,var(--cyan),var(--violet) 55%,var(--magenta));-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo span{opacity:.6}
+.chips{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.chip{border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:12px;color:var(--muted);background:rgba(10,16,40,.5)}
+.chip b{color:var(--acc);font-weight:700;letter-spacing:.08em}
+
+/* layout */
+.layout{display:grid;grid-template-columns:minmax(330px,440px) minmax(0,1fr);gap:16px;max-width:1280px;margin:0 auto;padding:14px 16px 40px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 10px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04)}
+.core-panel{padding:18px;position:sticky;top:12px}
+.main-panel{padding:14px;min-height:60vh}
+
+/* hint */
+.hint{display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:12px;border:1px solid var(--line2);
+  background:linear-gradient(90deg,rgba(59,107,255,.18),rgba(138,92,255,.12));font-size:13.5px;min-height:42px}
+.hint i{flex:none;width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);animation:blink 1.6s ease-in-out infinite}
+
+/* balance */
+.balance{text-align:center;margin:14px 0 4px}
+.balance .lbl{font-size:12px;letter-spacing:.35em;color:var(--muted)}
+.big{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:clamp(34px,7vw,52px);line-height:1.1;
+  background:linear-gradient(180deg,#fff,var(--acc) 90%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 14px hsl(var(--h) 100% 55% / .35));word-break:break-all}
+.eps{font-family:var(--mono);font-size:15px;color:var(--acc2);margin-top:2px}
+
+/* core */
+.core-stage{position:relative;width:min(100%,340px);aspect-ratio:1;margin:8px auto 10px;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.rings{position:absolute;inset:0;pointer-events:none}
+.rings i{position:absolute;border-radius:50%;border:1px solid hsl(var(--h) 100% 60% / .35);animation:spin 24s linear infinite;display:none}
+.rings i::after{content:"";position:absolute;top:-4px;left:50%;width:7px;height:7px;margin-left:-3px;border-radius:50%;background:var(--acc2);box-shadow:0 0 10px var(--acc2)}
+.rings i:nth-child(1){inset:3%;animation-duration:26s}
+.rings i:nth-child(2){inset:-0%;border-style:dashed;animation-duration:38s;animation-direction:reverse;opacity:.7}
+.rings i:nth-child(3){inset:8%;animation-duration:17s;border-color:hsl(calc(var(--h) + 70) 100% 65% / .35)}
+.rings i:nth-child(4){inset:-4%;animation-duration:52s;animation-direction:reverse;border-style:dotted}
+.rings i:nth-child(5){inset:12%;animation-duration:11s;border-color:hsl(calc(var(--h) + 140) 100% 65% / .35)}
+body[data-rings="1"] .rings i:nth-child(-n+1),
+body[data-rings="2"] .rings i:nth-child(-n+2),
+body[data-rings="3"] .rings i:nth-child(-n+3),
+body[data-rings="4"] .rings i:nth-child(-n+4),
+body[data-rings="5"] .rings i{display:block}
+.core{position:absolute;inset:17%;border-radius:50%;border:1px solid rgba(255,255,255,.28);
+  background:radial-gradient(circle at 34% 28%,#fff 0,hsl(var(--h) 100% 72%) 9%,hsl(var(--h) 90% 48%) 34%,hsl(calc(var(--h) + 70) 70% 24%) 64%,#080c24 100%);
+  box-shadow:0 0 34px hsl(var(--h) 100% 55% / .45),0 0 90px hsl(calc(var(--h) + 70) 100% 55% / .22),inset 0 0 40px rgba(0,0,0,.45);
+  transition:transform .09s ease,box-shadow .2s;z-index:2;display:grid;place-items:center;padding:0;-webkit-tap-highlight-color:transparent;
+  animation:breathe 3.4s ease-in-out infinite}
+.core:hover{box-shadow:0 0 44px hsl(var(--h) 100% 60% / .6),0 0 110px hsl(calc(var(--h) + 70) 100% 55% / .3),inset 0 0 40px rgba(0,0,0,.4)}
+.core.press{transform:scale(.94)}
+.core-label{font-weight:800;letter-spacing:.4em;font-size:13px;color:rgba(255,255,255,.85);text-shadow:0 0 12px rgba(0,0,0,.6);padding-left:.4em;pointer-events:none}
+#floats{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:visible}
+.float{position:absolute;font-family:var(--mono);font-weight:700;font-size:18px;color:#fff;text-shadow:0 0 10px var(--acc),0 0 2px #000;
+  white-space:nowrap;animation:floatup .95s ease-out forwards;transform:translate(-50%,-50%)}
+.float.crit{font-size:26px;color:var(--warn);text-shadow:0 0 14px var(--magenta)}
+
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.stat{padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:rgba(8,12,34,.5);min-width:0}
+.stat small{display:block;color:var(--muted)}
+.stat b{font-family:var(--mono);font-size:15px;font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* tabs */
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.tab{flex:none;position:relative;border:1px solid var(--line);background:rgba(10,16,40,.5);border-radius:12px;padding:8px 14px;font-size:14px;color:var(--muted);
+  transition:all .15s}
+.tab:hover{color:var(--text);border-color:var(--line2)}
+.tab.on{color:#fff;border-color:var(--acc);background:linear-gradient(180deg,hsl(var(--h) 100% 50% / .22),rgba(59,107,255,.12));box-shadow:0 0 16px hsl(var(--h) 100% 55% / .22)}
+.tab[data-alert="1"]::after{content:"";position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 8px var(--good)}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0;flex-wrap:wrap}
+body:not([data-tab="tiers"]):not([data-tab="upgrades"]) .toolbar{display:none}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{background:transparent;border:0;padding:6px 14px;color:var(--muted);font-family:var(--mono);font-size:13px}
+.seg button.on{background:linear-gradient(180deg,hsl(var(--h) 100% 50% / .3),rgba(138,92,255,.2));color:#fff}
+.seg button+button{border-left:1px solid var(--line)}
+
+/* cards */
+.list{display:grid;gap:10px}
+.card{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:12px;position:relative;transition:border-color .2s,box-shadow .2s}
+.card.afford{border-color:hsl(var(--h) 100% 60% / .45)}
+.card.locked{opacity:.65;border-style:dashed}
+.card-top{display:flex;gap:10px;align-items:center}
+.idx{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-family:var(--mono);font-size:13px;
+  background:linear-gradient(135deg,rgba(59,107,255,.4),rgba(138,92,255,.4));border:1px solid var(--line2)}
+.card-title{flex:1;min-width:0}
+.card-title h3{font-size:16px;letter-spacing:.03em}
+.card-title p{font-size:12.5px}
+.owned{text-align:right}
+.owned small{display:block;color:var(--muted)}
+.owned b{font-family:var(--mono);font-size:22px;line-height:1}
+.kv{display:flex;flex-wrap:wrap;gap:4px 14px;margin:8px 0 6px;font-size:12.5px;color:var(--muted)}
+.kv b{color:var(--text);font-family:var(--mono);font-weight:600}
+.bar{height:5px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--magenta));border-radius:99px;transition:width .2s}
+.ms small{color:var(--muted);display:block;margin-top:3px}
+.actions{display:grid;grid-template-columns:1.4fr 1fr;gap:8px;margin-top:10px}
+.actions.one{grid-template-columns:1fr}
+.btn{position:relative;overflow:hidden;border:1px solid var(--line2);border-radius:12px;padding:8px 10px;background:rgba(20,30,70,.6);
+  display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:44px;text-align:left;
+  transition:transform .1s,box-shadow .2s,background .2s,border-color .2s}
+.btn .bl{font-size:13px}
+.btn .bp{font-family:var(--mono);font-size:13px;font-weight:700;white-space:nowrap}
+.btn.can{background:linear-gradient(135deg,rgba(34,228,255,.28),rgba(59,107,255,.38) 55%,rgba(138,92,255,.38));border-color:hsl(var(--h) 100% 62% / .7)}
+.btn.can:hover{box-shadow:0 0 18px hsl(var(--h) 100% 55% / .45);transform:translateY(-1px)}
+.btn:active{transform:translateY(1px) scale(.985)}
+.btn.short{color:var(--muted);border-color:var(--line)}
+.btn.short .bp{color:var(--warn)}
+.btn.ghost.can{background:linear-gradient(135deg,rgba(138,92,255,.28),rgba(255,61,240,.22));border-color:rgba(255,61,240,.5)}
+.btn.plain{justify-content:center}
+.btn.danger{border-color:rgba(255,93,122,.6);background:rgba(255,93,122,.14)}
+.btn.primary{justify-content:center;background:linear-gradient(135deg,var(--cyan),var(--blue) 55%,var(--violet));color:#02050f;font-weight:700;border:0}
+.btn.primary:hover{box-shadow:0 0 22px rgba(34,228,255,.5)}
+.btn.big{min-height:52px;font-size:16px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.card.bought{animation:bought .6s ease-out}
+.btn.shake{animation:shake .3s}
+.sec-title{font-size:13px;letter-spacing:.2em;color:var(--muted);margin:16px 2px 8px}
+
+/* ascension */
+.asc-hero{padding:16px;border-radius:16px;border:1px solid rgba(255,61,240,.35);background:linear-gradient(135deg,rgba(138,92,255,.18),rgba(255,61,240,.1))}
+.asc-hero .nv{font-family:var(--mono);font-size:30px;font-weight:700;color:var(--magenta);text-shadow:0 0 16px rgba(255,61,240,.5)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.mini{border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:rgba(8,12,34,.45)}
+.mini small{color:var(--muted);display:block}
+.mini b{font-family:var(--mono)}
+.listing{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--muted)}
+
+/* achievements */
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.ach{border:1px solid var(--line);border-radius:12px;padding:9px 10px;background:rgba(10,16,40,.45);display:flex;gap:9px;align-items:flex-start}
+.ach .ic{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;border:1px solid var(--line2);color:var(--muted)}
+.ach b{display:block;font-size:13.5px}
+.ach small{color:var(--muted)}
+.ach.done{border-color:hsl(var(--h) 100% 60% / .5);background:linear-gradient(135deg,rgba(34,228,255,.1),rgba(138,92,255,.1))}
+.ach.done .ic{background:var(--acc);color:#02050f;border:0;box-shadow:0 0 10px var(--acc)}
+
+/* settings */
+.set-group{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px;background:rgba(8,12,34,.4)}
+.set-group h3{font-size:14px;margin-bottom:8px;letter-spacing:.08em}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:8px 0}
+.row .btn{min-width:130px;justify-content:center}
+.switch{position:relative;width:46px;height:26px;flex:none}
+.switch input{position:absolute;inset:0;opacity:0;cursor:pointer;margin:0;z-index:2}
+.switch span{position:absolute;inset:0;border-radius:99px;background:rgba(255,255,255,.12);border:1px solid var(--line2);transition:.2s}
+.switch span::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#aab6dd;transition:.2s}
+.switch input:checked+span{background:linear-gradient(90deg,var(--blue),var(--violet))}
+.switch input:checked+span::after{transform:translateX(20px);background:#fff}
+.switch input:focus-visible+span{outline:2px solid var(--acc);outline-offset:2px}
+select,textarea{width:100%;background:rgba(4,8,24,.8);color:var(--text);border:1px solid var(--line2);border-radius:10px;padding:8px 10px;font:inherit}
+select{width:auto;min-width:160px}
+textarea{font-family:var(--mono);font-size:12px;min-height:84px;resize:vertical;word-break:break-all}
+.msg{font-size:13px;min-height:20px;margin-top:6px}
+.msg.bad{color:var(--bad)} .msg.good{color:var(--good)}
+
+/* toasts / modal */
+#toasts{position:fixed;right:12px;top:12px;display:grid;gap:8px;z-index:50;width:min(340px,calc(100vw - 24px));pointer-events:none}
+.toast{pointer-events:none;border:1px solid var(--line2);background:rgba(10,16,42,.94);border-radius:12px;padding:10px 12px;font-size:13.5px;
+  box-shadow:0 8px 30px rgba(0,0,0,.5);animation:slidein .3s ease-out}
+.toast.good{border-color:rgba(55,240,176,.6)} .toast.bad{border-color:rgba(255,93,122,.7)}
+.toast.ach{border-color:var(--magenta);background:linear-gradient(135deg,rgba(138,92,255,.4),rgba(10,16,42,.95))}
+.toast.out{opacity:0;transform:translateX(20px);transition:.3s}
+#modalRoot .backdrop{position:fixed;inset:0;background:rgba(2,4,12,.72);backdrop-filter:blur(4px);z-index:80;display:grid;place-items:center;padding:16px;animation:fade .2s}
+.dialog{width:min(520px,100%);max-height:92vh;overflow:auto;border:1px solid var(--line2);border-radius:20px;padding:20px;
+  background:linear-gradient(160deg,rgba(20,28,66,.97),rgba(8,12,32,.98));box-shadow:0 20px 70px rgba(0,0,0,.6),0 0 40px rgba(59,107,255,.2)}
+.dialog h2{font-size:20px;margin-bottom:10px;background:linear-gradient(90deg,var(--cyan),var(--magenta));-webkit-background-clip:text;background-clip:text;color:transparent}
+.dialog .body{font-size:14px;display:grid;gap:8px}
+.dialog .body ol,.dialog .body ul{margin:0;padding-left:20px}
+.dialog .btns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.dialog .btns .btn{min-width:110px;justify-content:center}
+#flash{position:fixed;inset:0;pointer-events:none;z-index:70;opacity:0;background:radial-gradient(circle at 50% 40%,hsl(var(--h) 100% 70% / .35),transparent 65%)}
+#flash.on{animation:flash .6s ease-out}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes breathe{0%,100%{filter:brightness(1)}50%{filter:brightness(1.12)}}
+@keyframes blink{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes floatup{0%{opacity:0;margin-top:0}12%{opacity:1}100%{opacity:0;margin-top:-80px}}
+@keyframes bought{0%{box-shadow:0 0 0 0 hsl(var(--h) 100% 60% / .7)}100%{box-shadow:0 0 0 18px hsl(var(--h) 100% 60% / 0)}}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@keyframes slidein{from{opacity:0;transform:translateX(30px)}}
+@keyframes fade{from{opacity:0}}
+@keyframes flash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+body.no-fx .rings i,body.no-fx .core,body.no-fx .hint i{animation:none}
+body.no-fx .float{animation-duration:.01ms}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;padding:10px 10px 40px}
+  .core-panel{position:static;padding:14px}
+  .core-stage{width:min(72vw,250px)}
+  .topbar{padding:10px 10px 0}
+  .chip.hide-s{display:none}
+  .actions{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body data-tab="tiers" data-rings="1">
+<noscript>このゲームの実行には JavaScript が必要です。</noscript>
+
+<header class="topbar">
+  <div class="logo">NEON<span>//</span>INFINITY</div>
+  <div class="chips">
+    <span class="chip">STAGE <b id="stageChip">BOOT</b></span>
+    <span class="chip hide-s" id="saveInfo">未保存</span>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="panel core-panel" aria-label="コア">
+    <div class="hint" id="hintBox"><i></i><span id="hint">コアをクリックして ENERGY を集めよう</span></div>
+    <div class="balance">
+      <div class="lbl">ENERGY</div>
+      <div class="big" id="energy">0</div>
+      <div class="eps" id="eps">+0 / 秒</div>
+    </div>
+    <div class="core-stage" id="stageWrap">
+      <canvas id="fx"></canvas>
+      <div class="rings" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <button id="core" class="core" type="button" aria-label="コアをクリックして ENERGY を獲得"><span class="core-label">TAP</span></button>
+      <div id="floats"></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><small>クリック威力</small><b id="stClick">1</b></div>
+      <div class="stat"><small>毎秒生産量</small><b id="stEps">0</b></div>
+      <div class="stat"><small>総獲得量</small><b id="stTotal">0</b></div>
+      <div class="stat"><small>プレイ時間</small><b id="stTime">0:00:00</b></div>
+      <div class="stat"><small>総クリック数</small><b id="stClicks">0</b></div>
+      <div class="stat"><small>NOVA / 転生回数</small><b id="stNova">0 / 0</b></div>
+    </div>
+  </section>
+
+  <section class="panel main-panel" aria-label="メニュー">
+    <nav class="tabs" id="tabs" role="tablist">
+      <button class="tab on" data-tab="tiers" role="tab">施設</button>
+      <button class="tab" data-tab="upgrades" role="tab">強化</button>
+      <button class="tab" data-tab="ascension" role="tab">転生</button>
+      <button class="tab" data-tab="ach" role="tab">実績</button>
+      <button class="tab" data-tab="settings" role="tab">設定</button>
+    </nav>
+    <div class="toolbar">
+      <div class="seg" id="bulk" role="group" aria-label="購入数">
+        <button data-bulk="1">x1</button><button data-bulk="10">x10</button><button data-bulk="100">x100</button><button data-bulk="max">最大</button>
+      </div>
+      <small class="muted">指数的に価格が上昇します。強化は施設の購入数に応じて自動で倍率が付与されます。</small>
+    </div>
+
+    <div id="tab-tiers" class="tabbody"><div class="list" id="tierList"></div></div>
+    <div id="tab-upgrades" class="tabbody" hidden>
+      <div class="list" id="upgList"></div>
+    </div>
+    <div id="tab-ascension" class="tabbody" hidden>
+      <div id="ascLocked" class="asc-hero">
+        <h3>ASCENSION (転生)</h3>
+        <p class="muted" style="margin:6px 0 10px">累計 ENERGY が <b id="ascReq">1.00M</b> に到達すると解放されます。転生すると、リセットと引き換えに永続的な NOVA を獲得できます。</p>
+        <div class="bar"><i id="ascProg"></i></div>
+        <small class="muted" id="ascProgText"></small>
+      </div>
+      <div id="ascMain" hidden>
+        <div class="asc-hero">
+          <small class="muted">今すぐ転生した場合の獲得量</small>
+          <div class="nv" id="ascGain">+0 NOVA</div>
+          <div class="two">
+            <div class="mini"><small>所持 NOVA</small><b id="ascBank">0</b></div>
+            <div class="mini"><small>今回の累計 ENERGY</small><b id="ascRun">0</b></div>
+          </div>
+          <p class="muted" style="font-size:13px;margin-top:8px">獲得量は 今回の累計ENERGY の平方根に比例します (1e5 ごとに √ 計算)。</p>
+          <button class="btn primary big" id="btnAscend" style="margin-top:12px;width:100%">転生する</button>
+        </div>
+        <div class="sec-title">永続強化 (NOVA で購入 / 転生しても保持)</div>
+        <div class="list" id="permList"></div>
+      </div>
+    </div>
+    <div id="tab-ach" class="tabbody" hidden>
+      <div class="asc-hero" style="margin-bottom:10px;border-color:var(--line2);background:rgba(10,16,40,.5)">
+        <b id="achSummary"></b><br><small class="muted">実績を達成するごとに 全生産量とクリック威力 +2% (加算) の報酬を獲得します。</small>
+      </div>
+      <div class="ach-grid" id="achGrid"></div>
+    </div>
+    <div id="tab-settings" class="tabbody" hidden>
+      <div class="set-group">
+        <h3>セーブ</h3>
+        <div class="row"><span>最終保存: <b id="setSaveInfo">-</b></span><button class="btn plain" id="btnSave">手動セーブ</button></div>
+        <small class="muted">一定間隔・購入・転生・設定変更のたびに自動保存されます。</small>
+      </div>
+      <div class="set-group">
+        <h3>セーブコード (別ブラウザ / PCへの引き継ぎ)</h3>
+        <div class="row"><button class="btn plain" id="btnExport">コードを書き出す</button><button class="btn plain" id="btnCopy">コピー</button></div>
+        <textarea id="codeOut" readonly placeholder="ここにセーブコードが表示されます" aria-label="書き出したセーブコード"></textarea>
+        <div class="sec-title" style="margin-top:14px">読み込み</div>
+        <textarea id="codeIn" placeholder="セーブコードを貼り付け" aria-label="読み込むセーブコード"></textarea>
+        <div class="row"><button class="btn plain" id="btnImport">コードを読み込む</button></div>
+        <div class="msg" id="importMsg" role="status"></div>
+      </div>
+      <div class="set-group">
+        <h3>表示・演出</h3>
+        <div class="row"><label for="setSound">効果音</label><label class="switch"><input type="checkbox" id="setSound"><span></span></label></div>
+        <div class="row"><label for="setFx">演出 (パーティクル・波紋・発光アニメ)</label><label class="switch"><input type="checkbox" id="setFx"><span></span></label></div>
+        <div class="row"><label for="setFormat">数値表示形式</label>
+          <select id="setFormat"><option value="short">略称 (1.25K / 3.42M / 1.20Qa)</option><option value="sci">科学表記 (1.25e3)</option><option value="eng">工学表記 (125.00e3)</option></select></div>
+      </div>
+      <div class="set-group">
+        <h3>危険な操作</h3>
+        <div class="row"><span class="muted">すべての進行状況を削除します</span><button class="btn plain danger" id="btnReset">セーブデータをリセット</button></div>
+        <div class="row"><button class="btn plain" id="btnTutorial">チュートリアルをもう一度見る</button></div>
+      </div>
+      <small class="muted">NEON//INFINITY v1.0 — ブラウザの localStorage に保存されます。</small>
+    </div>
+  </section>
+</main>
+
+<div id="toasts" aria-live="polite"></div>
+<div id="modalRoot"></div>
+<div id="flash"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* =====================================================================
+   1. 巨大数システム (仮数部 m ∈ [1,10) × 10^e)
+   ===================================================================== */
+const EMAX = 9e15;
+class D {
+  constructor(m, e) { this.m = m; this.e = e; }
+  static make(m, e) {
+    if (!(m > 0) || !Number.isFinite(m) || !Number.isFinite(e)) return ZERO;
+    if (m >= 10 || m < 1) {
+      const k = Math.floor(Math.log10(m));
+      m /= Math.pow(10, k); e += k;
+      if (m >= 10) { m /= 10; e += 1; } else if (m < 1) { m *= 10; e -= 1; }
+    }
+    if (e > EMAX) return new D(1, EMAX);
+    if (e < -EMAX) return ZERO;
+    return new D(m, e);
+  }
+  static from(x) {
+    if (x instanceof D) return x;
+    if (typeof x === 'number') return (x > 0 && Number.isFinite(x)) ? D.make(x, 0) : ZERO;
+    if (typeof x === 'string') return D.parse(x) || ZERO;
+    return ZERO;
+  }
+  static parse(s) {
+    s = String(s).trim().toLowerCase();
+    const r = /^(\d+(?:\.\d+)?)(?:e([+-]?\d+))?$/.exec(s);
+    if (!r) return null;
+    const m = parseFloat(r[1]); const e = r[2] ? parseInt(r[2], 10) : 0;
+    if (!Number.isFinite(m) || !Number.isFinite(e)) return null;
+    return m === 0 ? ZERO : D.make(m, e);
+  }
+  isZero() { return this.m === 0; }
+  toNumber() {
+    if (this.m === 0) return 0;
+    if (this.e > 308) return Number.MAX_VALUE;
+    if (this.e < -320) return 0;
+    const v = this.m * Math.pow(10, this.e);
+    return Number.isFinite(v) ? v : Number.MAX_VALUE;
+  }
+  add(o) {
+    o = D.from(o);
+    if (this.m === 0) return o;
+    if (o.m === 0) return this;
+    let a = this, b = o;
+    if (a.e < b.e || (a.e === b.e && a.m < b.m)) { a = o; b = this; }
+    const d = a.e - b.e;
+    if (d > 16) return a;
+    return D.make(a.m + b.m * Math.pow(10, -d), a.e);
+  }
+  sub(o) {
+    o = D.from(o);
+    if (o.m === 0) return this;
+    if (this.cmp(o) <= 0) return ZERO;
+    const d = this.e - o.e;
+    if (d > 16) return this;
+    return D.make(this.m - o.m * Math.pow(10, -d), this.e);
+  }
+  mul(o) { o = D.from(o); if (this.m === 0 || o.m === 0) return ZERO; return D.make(this.m * o.m, this.e + o.e); }
+  div(o) { o = D.from(o); if (this.m === 0 || o.m === 0) return ZERO; return D.make(this.m / o.m, this.e - o.e); }
+  pow(x) {
+    if (!(x >= 0) || !Number.isFinite(x)) return ZERO;
+    if (x === 0) return ONE;
+    if (this.m === 0) return ZERO;
+    const L = x * this.log10();
+    if (Math.abs(L) < 290 && this.e < 290 && this.e > -290) {
+      const v = Math.pow(this.toNumber(), x);
+      return D.make(v, 0);
+    }
+    const e2 = Math.floor(L);
+    return D.make(Math.pow(10, L - e2), e2);
+  }
+  log10() { return this.m === 0 ? 0 : this.e + Math.log10(this.m); }
+  cmp(o) {
+    o = D.from(o);
+    if (this.m === 0) return o.m === 0 ? 0 : -1;
+    if (o.m === 0) return 1;
+    if (this.e !== o.e) return this.e > o.e ? 1 : -1;
+    if (this.m === o.m) return 0;
+    return this.m > o.m ? 1 : -1;
+  }
+  gte(o) { return this.cmp(o) >= 0; }
+  lt(o) { return this.cmp(o) < 0; }
+  floor() {
+    if (this.m === 0 || this.e >= 15) return this;
+    const v = this.toNumber();
+    return D.make(Math.floor(v + Math.max(1e-9, v * 1e-13)), 0);
+  }
+  toStorage() { return this.m === 0 ? '0' : this.m.toPrecision(15) + 'e' + this.e; }
+}
+const ZERO = new D(0, 0);
+const ONE = new D(1, 0);
+
+/* =====================================================================
+   2. 数値表示
+   ===================================================================== */
+let state = null;
+const SUFFIX = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc', 'UDc', 'DDc', 'TDc', 'QaDc', 'QiDc', 'SxDc', 'SpDc', 'OcDc', 'NoDc', 'Vg'];
+function fmtExp(e) {
+  if (Math.abs(e) < 1e6) return String(e);
+  const x = Math.min(SUFFIX.length - 1, Math.floor(Math.log10(Math.abs(e)) / 3));
+  return (e / Math.pow(10, 3 * x)).toFixed(2) + SUFFIX[x];
+}
+function fmt(v, opt) {
+  const d = D.from(v);
+  if (d.m === 0) return '0';
+  const mode = (state && state.settings.format) || 'short';
+  const int = !!(opt && opt.int);
+  let m = d.m, e = d.e;
+  if (e < 3) {
+    let n = d.toNumber();
+    if (int) n = Math.floor(n);
+    let s;
+    if (int || n >= 100) s = n.toFixed(0);
+    else if (n >= 10) s = n.toFixed(1);
+    else if (n >= 0.01) s = n.toFixed(2);
+    else s = n.toExponential(1).replace('e-', 'e−');
+    if (parseFloat(s) < 1000) return s;
+    m = 1; e = 3;
+  }
+  let ms = m.toFixed(2);
+  if (ms === '10.00') { m = 1; e += 1; ms = '1.00'; }
+  if (mode === 'sci') return ms + 'e' + fmtExp(e);
+  if (mode === 'eng') {
+    const r = ((e % 3) + 3) % 3;
+    let s = (m * Math.pow(10, r)).toFixed(2), ee = e - r;
+    if (parseFloat(s) >= 1000) { s = '1.00'; ee += 3; }
+    return s + 'e' + fmtExp(ee);
+  }
+  let idx = Math.floor(e / 3);
+  if (idx < SUFFIX.length) {
+    const r = e - idx * 3;
+    const s = (m * Math.pow(10, r)).toFixed(2);
+    if (parseFloat(s) >= 1000) {
+      idx += 1;
+      return idx < SUFFIX.length ? '1.00' + SUFFIX[idx] : '1.00e' + fmtExp(idx * 3);
+    }
+    return s + SUFFIX[idx];
+  }
+  return ms + 'e' + fmtExp(e);
+}
+const fmtInt = v => fmt(v, { int: true });
+function fmtDuration(sec) {
+  sec = Math.max(0, Math.floor(sec));
+  const d = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+  if (d > 0) return `${d}日 ${h}時間`;
+  if (h > 0) return `${h}時間 ${m}分`;
+  if (m > 0) return `${m}分 ${s}秒`;
+  return `${s}秒`;
+}
+function fmtClock(sec) {
+  sec = Math.max(0, Math.floor(sec));
+  const d = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+  const p = n => String(n).padStart(2, '0');
+  return (d > 0 ? d + '日 ' : '') + (d > 0 ? p(h) : h) + ':' + p(m) + ':' + p(s);
+}
+function fmtDateTime(ms) {
+  if (!ms) return '-';
+  const t = new Date(ms); const p = n => String(n).padStart(2, '0');
+  return `${t.getFullYear()}/${p(t.getMonth() + 1)}/${p(t.getDate())} ${p(t.getHours())}:${p(t.getMinutes())}:${p(t.getSeconds())}`;
+}
+const fmtPlain = n => Math.floor(n).toLocaleString('ja-JP');
+
+/* =====================================================================
+   3. ゲーム定義
+   ===================================================================== */
+const SAVE_VERSION = 1;
+const KEY = 'neon_infinity_save_v1', BACKUP_KEY = 'neon_infinity_backup_v1', CORRUPT_KEY = 'neon_infinity_corrupt_v1';
+const OFFLINE_EFF = 0.5, OFFLINE_CAP = 12 * 3600, SLEEP_GAP = 120;
+const ASC_UNLOCK = D.make(1, 6);
+const reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+const TIER_BASE = [[10, 0.5], [100, 4], [1100, 32], [12000, 210], [130000, 1300], [1400000, 8000]];
+const TIER_NAMES = ['Pulse Generator', 'Neon Reactor', 'Quantum Core', 'Singularity Engine', 'Void Harvester', 'Infinity Forge',
+  'Hyper Lattice', 'Cosmic Loom', 'Eternity Prism', 'Origin Cascade', 'Paradox Foundry', 'Omega Nexus'];
+const TIER_DESC = ['微弱なパルスでENERGYを生み出す小型発電機', 'ネオン燃料を燃やす高出力リアクター', '量子の揺らぎから電力を汲み出すコア',
+  '特異点の重力を動力に変える機関', '虚空に漂うエネルギーを収穫する装置', '無限そのものを鍛造する究極の炉',
+  '多次元格子が増幅するエネルギー網', '宇宙の織機が紡ぐ光の糸', '永遠を屈折させるプリズム', '原初の滝がすべてを満たす',
+  '逆説を燃料にする鋳造所', '全ての終点にして始点'];
+const tierCache = [];
+function tierDef(i) {
+  if (tierCache[i]) return tierCache[i];
+  let cost, prod;
+  if (i < TIER_BASE.length) { cost = D.from(TIER_BASE[i][0]); prod = D.from(TIER_BASE[i][1]); }
+  else { const p = tierDef(i - 1); cost = p.cost.mul(11); prod = p.prod.mul(6.5); }
+  const def = {
+    i, cost, prod, ratio: 1.15, tuneBase: cost.mul(60), tuneRatio: 6,
+    name: TIER_NAMES[i] || ('Omega Layer ' + (i - TIER_NAMES.length + 1)),
+    desc: TIER_DESC[i] || '次元の外側で動き続ける未知の施設'
+  };
+  tierCache[i] = def; return def;
+}
+const RUN_UPG = [
+  { id: 'click', name: 'Click Amplifier', desc: 'クリックごとの獲得量が倍増する', base: D.from(50), ratio: 4.2, unlock: 0,
+    eff: L => `クリック基礎威力 ×${fmt(D.from(2).pow(L))} → ×${fmt(D.from(2).pow(L + 1))}` },
+  { id: 'auto', name: 'Auto Tapper', desc: 'コアを自動でタップする (1段階 = 毎秒1クリック分)', base: D.from(800), ratio: 6, unlock: 300,
+    eff: L => `毎秒 ${L} 回 → ${L + 1} 回の自動タップ` },
+  { id: 'reson', name: 'Core Resonance', desc: 'クリック時に毎秒生産量の一部を上乗せする', base: D.from(4000), ratio: 7, unlock: 2000,
+    eff: L => `毎秒生産の ${2 * L}% → ${2 * (L + 1)}% をクリックに加算` },
+  { id: 'over', name: 'Global Overclock', desc: '全施設の生産量を増幅する', base: D.from(10000), ratio: 12, unlock: 6000,
+    eff: L => `全生産 ×${fmt(D.from(1.5).pow(L))} → ×${fmt(D.from(1.5).pow(L + 1))}` }
+];
+const headStart = L => L <= 0 ? ZERO : D.make(1, L + 1);
+const PERM_UPG = [
+  { id: 'out', name: 'Eternal Output', desc: '全生産量を永続的に倍増', base: D.from(2), ratio: 3.5,
+    eff: L => `全生産 ×${fmt(D.from(2).pow(L))} → ×${fmt(D.from(2).pow(L + 1))}` },
+  { id: 'tap', name: 'Eternal Tap', desc: 'クリック威力を永続的に倍増', base: D.from(2), ratio: 3,
+    eff: L => `クリック ×${fmt(D.from(2).pow(L))} → ×${fmt(D.from(2).pow(L + 1))}` },
+  { id: 'head', name: 'Head Start', desc: '転生後、ENERGYを持った状態で再開', base: D.from(4), ratio: 5,
+    eff: L => `開始時 ${fmt(headStart(L))} → ${fmt(headStart(L + 1))} ENERGY` },
+  { id: 'res', name: 'Nova Resonance', desc: '転生時の NOVA 獲得量を増加', base: D.from(10), ratio: 6,
+    eff: L => `獲得量 ×${(1 + 0.5 * L).toFixed(1)} → ×${(1 + 0.5 * (L + 1)).toFixed(1)}` }
+];
+const STAGES = ['BOOT', 'SPARK', 'PULSE', 'FLUX', 'PLASMA', 'QUANTUM', 'VOID', 'SINGULARITY', 'INFINITY'];
+const HUES = [190, 210, 250, 280, 315];
+
+const milestoneAt = k => k < 3 ? [10, 25, 50][k] : 100 + 50 * (k - 3);
+const msCount = n => n < 10 ? 0 : n < 25 ? 1 : n < 50 ? 2 : n < 100 ? 3 : 4 + Math.floor((n - 100) / 50);
+
+/* 実績 */
+const ACH = [];
+(function buildAch() {
+  const te = [3, 6, 9, 12, 15, 18, 21, 24, 30, 36, 45, 60, 80, 100, 150, 200, 300];
+  const teN = ['First Spark', 'Warm Circuit', 'Bright Grid', 'Overflow', 'City Lights', 'Solar Tide', 'Stellar Forge', 'Galaxy Hum', 'Deep Cosmos',
+    'Event Horizon', 'Beyond Scale', 'Numeric Abyss', 'Hyper Dimension', 'Infinite Echo', 'Limitless', 'Past Imagination', 'Neon Infinity'];
+  te.forEach((k, i) => ACH.push({ id: 'te' + k, name: teN[i], desc: () => `累計 ${fmt(D.make(1, k))} ENERGY を獲得`, test: () => state.totalEarned.gte(D.make(1, k)) }));
+  [1, 100, 1000, 10000, 100000].forEach((n, i) => ACH.push({ id: 'ck' + n, name: ['First Touch', 'Warming Up', 'Tap Dancer', 'Click Storm', 'Finger of Infinity'][i],
+    desc: () => `コアを ${fmtPlain(n)} 回クリック`, test: () => state.clicks >= n }));
+  [1, 100, 1e4, 1e6, 1e9, 1e12, 1e18, 1e30, 1e60, 1e100].forEach((n, i) => ACH.push({ id: 'ep' + i, name: ['Trickle', 'Stream', 'River', 'Torrent', 'Cascade', 'Deluge', 'Ocean', 'Cosmic Flow', 'Time Dilation', 'Perpetual Motion'][i],
+    desc: () => `毎秒生産量 ${fmt(n)} に到達`, test: () => calc.eps.gte(n) }));
+  [1, 25, 100, 250, 500, 1000].forEach((n, i) => ACH.push({ id: 'ow' + n, name: ['Builder', 'Foreman', 'Architect', 'Industrialist', 'Megastructure', 'Dyson Swarm'][i],
+    desc: () => `施設を合計 ${fmtPlain(n)} 台所有`, test: () => totalOwned() >= n }));
+  [2, 4, 6, 8, 12].forEach((n, i) => ACH.push({ id: 'ut' + n, name: ['Duo', 'Quartet', 'Complete Set', 'Beyond Six', 'Dozen Worlds'][i],
+    desc: () => `施設を ${n} 種類解放`, test: () => state.unlockedTier + 1 >= n }));
+  [1, 3, 10, 25].forEach((n, i) => ACH.push({ id: 'as' + n, name: ['Reborn', 'Cycle', 'Eternal Return', 'Ouroboros'][i],
+    desc: () => `${n} 回転生する`, test: () => state.ascensions >= n }));
+  [600, 3600, 21600, 86400].forEach((n, i) => ACH.push({ id: 'pt' + n, name: ['Settled In', 'Dedicated', 'Night Owl', 'Eternal Operator'][i],
+    desc: () => `プレイ時間 ${fmtDuration(n)}`, test: () => state.playTime >= n }));
+})();
+const ACH_BY_ID = new Set(ACH.map(a => a.id));
+
+/* =====================================================================
+   4. ゲーム状態 / 派生値
+   ===================================================================== */
+function newState() {
+  const now = Date.now();
+  return {
+    v: SAVE_VERSION, energy: ZERO, runEarned: ZERO, totalEarned: ZERO, nova: ZERO, novaTotal: ZERO,
+    clicks: 0, tiers: [], tuning: [], upg: { click: 0, auto: 0, reson: 0, over: 0 }, perm: { out: 0, tap: 0, head: 0, res: 0 },
+    ascensions: 0, ach: {}, unlockedTier: 0, ascUnlocked: false, playTime: 0,
+    lastTick: now, lastSaved: 0, created: now, tutorialDone: false,
+    settings: { sound: true, fx: !reducedMotion, format: 'short', bulk: '1' }
+  };
+}
+const calc = { eps: ZERO, tierEps: ZERO, global: ONE, clickBase: ONE, clickVal: ONE, achMult: 1, tier: [] };
+const owned = i => state.tiers[i] || 0;
+const totalOwned = () => state.tiers.reduce((a, b) => a + (b || 0), 0);
+const achCount = () => Object.keys(state.ach).length;
+
+function recalc() {
+  const L = state.upg, P = state.perm;
+  calc.achMult = 1 + 0.02 * achCount();
+  calc.global = D.from(1.5).pow(L.over).mul(D.from(2).pow(P.out)).mul(calc.achMult);
+  let sum = ZERO;
+  for (let i = 0; i <= state.unlockedTier; i++) {
+    const n = owned(i), def = tierDef(i), ms = msCount(n);
+    const mult = D.from(2).pow(ms + (state.tuning[i] || 0));
+    const eps = def.prod.mul(n).mul(mult);
+    calc.tier[i] = { eps, mult, ms };
+    sum = sum.add(eps);
+  }
+  calc.tierEps = sum.mul(calc.global);
+  calc.clickBase = D.from(2).pow(L.click).mul(D.from(2).pow(P.tap)).mul(calc.achMult);
+  const auto = calc.clickBase.mul(L.auto);
+  calc.eps = calc.tierEps.add(auto);
+  calc.clickVal = calc.clickBase.add(calc.eps.mul(0.02 * L.reson));
+}
+function novaGain() {
+  const base = state.runEarned.div(1e5).pow(0.5).floor();
+  return base.mul(1 + 0.5 * state.perm.res).floor();
+}
+function earn(x) {
+  if (x.m === 0) return;
+  state.energy = state.energy.add(x);
+  state.runEarned = state.runEarned.add(x);
+  state.totalEarned = state.totalEarned.add(x);
+}
+
+/* 購入価格 (等比数列) */
+function bulkCost(base, ratio, level, n) {
+  const r = D.from(ratio);
+  const c0 = base.mul(r.pow(level));
+  if (n === 1) return c0;
+  const rm1 = Math.round((ratio - 1) * 1e6) / 1e6;
+  return c0.mul(r.pow(n).sub(1)).div(rm1);
+}
+function maxAffordable(base, ratio, level, money) {
+  const r = D.from(ratio);
+  const c0 = base.mul(r.pow(level));
+  if (money.cmp(c0) < 0) return 0;
+  const rm1 = Math.round((ratio - 1) * 1e6) / 1e6;
+  const x = money.mul(rm1).div(c0).add(1);
+  let n = Math.floor(x.log10() / Math.log10(ratio));
+  n = Math.max(0, Math.min(1e6, n));
+  for (let g = 0; g < 6 && n > 0 && bulkCost(base, ratio, level, n).cmp(money) > 0; g++) n--;
+  for (let g = 0; g < 6 && n < 1e6 && bulkCost(base, ratio, level, n + 1).cmp(money) <= 0; g++) n++;
+  return n;
+}
+function quote(base, ratio, level, mode, money) {
+  let n = mode === 'max' ? maxAffordable(base, ratio, level, money) : Number(mode);
+  if (!(n >= 1)) n = 1;
+  n = Math.min(n, 1e9 - level > 0 ? 1e9 - level : 1);
+  const cost = bulkCost(base, ratio, level, n);
+  return { n, cost, ok: cost.cmp(money) <= 0 };
+}
+
+/* =====================================================================
+   5. 保存 / 検証
+   ===================================================================== */
+function serialize(s) {
+  return {
+    v: SAVE_VERSION,
+    energy: s.energy.toStorage(), runEarned: s.runEarned.toStorage(), totalEarned: s.totalEarned.toStorage(),
+    nova: s.nova.toStorage(), novaTotal: s.novaTotal.toStorage(),
+    clicks: s.clicks, tiers: s.tiers.slice(), tuning: s.tuning.slice(), upg: { ...s.upg }, perm: { ...s.perm },
+    ascensions: s.ascensions, ach: { ...s.ach }, unlockedTier: s.unlockedTier, ascUnlocked: s.ascUnlocked,
+    playTime: s.playTime, lastTick: s.lastTick, lastSaved: s.lastSaved, created: s.created, tutorialDone: s.tutorialDone,
+    settings: { ...s.settings }
+  };
+}
+function sanitize(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('セーブデータの形式が不正です');
+  if (raw.v !== SAVE_VERSION) throw new Error('未対応のセーブバージョンです (v' + String(raw.v).slice(0, 12) + ')');
+  const s = newState(), now = Date.now();
+  const toDec = (v, name, req) => {
+    if (v === undefined) { if (req) throw new Error(`必須項目 ${name} がありません`); return ZERO; }
+    let d = null;
+    if (typeof v === 'number') d = (Number.isFinite(v) && v >= 0) ? D.from(v) : null;
+    else if (typeof v === 'string' && v.length < 40) d = D.parse(v);
+    if (!d) throw new Error(`項目 ${name} の数値が不正です`);
+    return d;
+  };
+  const toInt = (v, name, max) => {
+    if (v === undefined) return 0;
+    if (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > max) throw new Error(`項目 ${name} の値が不正です`);
+    return Math.floor(v);
+  };
+  const toArr = (v, name) => {
+    if (v === undefined) return [];
+    if (!Array.isArray(v) || v.length > 2000) throw new Error(`項目 ${name} の形式が不正です`);
+    return v.map(x => toInt(x, name, 1e9));
+  };
+  s.energy = toDec(raw.energy, 'energy', true);
+  s.totalEarned = toDec(raw.totalEarned, 'totalEarned', true);
+  s.runEarned = toDec(raw.runEarned, 'runEarned');
+  s.nova = toDec(raw.nova, 'nova'); s.novaTotal = toDec(raw.novaTotal, 'novaTotal');
+  if (s.runEarned.cmp(s.totalEarned) > 0) s.runEarned = s.totalEarned;
+  if (s.novaTotal.cmp(s.nova) < 0) s.novaTotal = s.nova;
+  s.clicks = toInt(raw.clicks, 'clicks', 9e15);
+  s.tiers = toArr(raw.tiers, 'tiers'); s.tuning = toArr(raw.tuning, 'tuning');
+  for (const k of Object.keys(s.upg)) s.upg[k] = raw.upg && raw.upg[k] !== undefined ? toInt(raw.upg[k], 'upg.' + k, 1e6) : 0;
+  for (const k of Object.keys(s.perm)) s.perm[k] = raw.perm && raw.perm[k] !== undefined ? toInt(raw.perm[k], 'perm.' + k, 1e6) : 0;
+  s.ascensions = toInt(raw.ascensions, 'ascensions', 1e9);
+  if (raw.ach !== undefined) {
+    if (!raw.ach || typeof raw.ach !== 'object' || Array.isArray(raw.ach)) throw new Error('項目 ach の形式が不正です');
+    for (const id of Object.keys(raw.ach)) if (ACH_BY_ID.has(id) && raw.ach[id] === true) s.ach[id] = true;
+  }
+  let ut = toInt(raw.unlockedTier, 'unlockedTier', 2000);
+  s.tiers.forEach((n, i) => { if (n > 0) ut = Math.max(ut, i); });
+  s.tuning.forEach((n, i) => { if (n > 0) ut = Math.max(ut, i); });
+  s.unlockedTier = ut;
+  s.ascUnlocked = raw.ascUnlocked === true || s.totalEarned.gte(ASC_UNLOCK);
+  const pt = Number(raw.playTime); s.playTime = Number.isFinite(pt) && pt >= 0 ? pt : 0;
+  const lt = Number(raw.lastTick); s.lastTick = (Number.isFinite(lt) && lt > 0 && lt <= now) ? lt : now;
+  const ls = Number(raw.lastSaved); s.lastSaved = (Number.isFinite(ls) && ls > 0 && ls <= now) ? ls : 0;
+  const cr = Number(raw.created); s.created = (Number.isFinite(cr) && cr > 0 && cr <= now) ? cr : now;
+  s.tutorialDone = raw.tutorialDone === true;
+  if (raw.settings && typeof raw.settings === 'object') {
+    const t = raw.settings;
+    if (typeof t.sound === 'boolean') s.settings.sound = t.sound;
+    if (typeof t.fx === 'boolean') s.settings.fx = t.fx;
+    if (['short', 'sci', 'eng'].includes(t.format)) s.settings.format = t.format;
+    if (['1', '10', '100', 'max'].includes(t.bulk)) s.settings.bulk = t.bulk;
+  }
+  return s;
+}
+
+let storageOK = true;
+function flushTick() { try { tick(); } catch (e) { /* ignore */ } }
+function saveLocal() {
+  if (!state) return false;
+  flushTick();
+  state.lastSaved = Date.now();
+  try {
+    localStorage.setItem(KEY, JSON.stringify(serialize(state)));
+    storageOK = true; updateSaveInfo(); return true;
+  } catch (e) {
+    if (storageOK) toast('ローカル保存に失敗しました。セーブコードで控えを取ってください。', 'bad');
+    storageOK = false; return false;
+  }
+}
+let saveTimer = 0;
+function saveSoon() { if (saveTimer) return; saveTimer = setTimeout(() => { saveTimer = 0; saveLocal(); }, 600); }
+function backupSave() { try { const cur = localStorage.getItem(KEY); if (cur) localStorage.setItem(BACKUP_KEY, cur); } catch (e) { /* ignore */ } }
+function loadLocal() {
+  let raw;
+  try { raw = localStorage.getItem(KEY); } catch (e) { storageOK = false; return { status: 'unavailable' }; }
+  if (raw === null) return { status: 'none' };
+  try { return { status: 'ok', state: sanitize(JSON.parse(raw)) }; }
+  catch (e) { return { status: 'error', error: e, raw }; }
+}
+
+/* コードセーブ */
+function cyrb53(str) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+}
+function b64uEncode(str) {
+  const bytes = new TextEncoder().encode(str); let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function b64uDecode(s) {
+  if (!/^[A-Za-z0-9_-]*$/.test(s)) throw new Error('コードに使用できない文字が含まれています');
+  s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '=';
+  const bin = atob(s), bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+}
+function exportCode() {
+  flushTick();
+  const payload = b64uEncode(JSON.stringify(serialize(state)));
+  return `NI${SAVE_VERSION}.${payload}.${cyrb53(payload).toString(36)}`;
+}
+function parseCode(input) {
+  const code = String(input || '').replace(/\s+/g, '');
+  if (!code) throw new Error('コードが入力されていません');
+  if (code.length > 400000) throw new Error('コードが長すぎます');
+  const parts = code.split('.');
+  if (parts.length !== 3) throw new Error('セーブコードの形式が正しくありません');
+  const m = /^NI(\d{1,4})$/.exec(parts[0]);
+  if (!m) throw new Error('セーブコードの形式が正しくありません');
+  if (Number(m[1]) !== SAVE_VERSION) throw new Error(`未対応のバージョンです (NI${m[1]})。このゲームは NI${SAVE_VERSION} に対応しています`);
+  if (cyrb53(parts[1]).toString(36) !== parts[2]) throw new Error('チェックサムが一致しません。コードが破損しているか、一部が欠けています');
+  let json, obj;
+  try { json = b64uDecode(parts[1]); obj = JSON.parse(json); } catch (e) { throw new Error('コードを解読できませんでした: ' + e.message); }
+  return sanitize(obj);
+}
+
+/* =====================================================================
+   6. サウンド / エフェクト
+   ===================================================================== */
+const audio = { ctx: null, last: 0 };
+function getAudio() {
+  if (!state || !state.settings.sound) return null;
+  if (!audio.ctx) { try { audio.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+  if (audio.ctx.state === 'suspended') { try { audio.ctx.resume(); } catch (e) { /* ignore */ } }
+  return audio.ctx;
+}
+function tone(freq, dur, type, vol, delay, slide) {
+  const c = getAudio(); if (!c) return;
+  try {
+    const t0 = c.currentTime + (delay || 0), o = c.createOscillator(), g = c.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(freq, t0);
+    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, freq * slide), t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0 + dur + 0.02);
+  } catch (e) { /* ignore */ }
+}
+const sfx = {
+  click(crit) { const n = performance.now(); if (n - audio.last < 45) return; audio.last = n; tone(crit ? 880 : 460 + Math.random() * 90, 0.07, 'triangle', crit ? 0.05 : 0.03, 0, 1.4); },
+  buy() { tone(520, 0.09, 'sine', 0.04); tone(780, 0.12, 'sine', 0.035, 0.07); },
+  fail() { tone(180, 0.12, 'square', 0.02, 0, 0.7); },
+  ach() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.18, 'triangle', 0.04, i * 0.08)); },
+  asc() { tone(120, 1.1, 'sawtooth', 0.04, 0, 8); tone(240, 1.1, 'sine', 0.04, 0, 6); },
+  mile() { tone(660, 0.1, 'triangle', 0.04); tone(990, 0.18, 'triangle', 0.04, 0.08); }
+};
+
+const fxEl = { canvas: null, ctx: null, w: 0, h: 0, parts: [], ripples: [], running: false, last: 0, dpr: 1 };
+function fxResize() {
+  const c = fxEl.canvas, r = c.getBoundingClientRect();
+  fxEl.dpr = Math.min(2, window.devicePixelRatio || 1);
+  fxEl.w = r.width; fxEl.h = r.height;
+  c.width = Math.max(1, Math.round(r.width * fxEl.dpr)); c.height = Math.max(1, Math.round(r.height * fxEl.dpr));
+}
+const fxOn = () => state && state.settings.fx;
+function fxStart() { if (!fxEl.running) { fxEl.running = true; fxEl.last = performance.now(); requestAnimationFrame(fxLoop); } }
+function fxBurst(x, y, power) {
+  if (!fxOn() || !fxEl.ctx) return;
+  const hue = Number(getComputedStyle(document.documentElement).getPropertyValue('--h')) || 190;
+  if (fxEl.ripples.length < 10) fxEl.ripples.push({ x, y, r: 20, a: 0.7, hue });
+  const n = power > 1 ? 18 : 8;
+  for (let i = 0; i < n && fxEl.parts.length < 140; i++) {
+    const a = Math.random() * Math.PI * 2, s = 40 + Math.random() * (power > 1 ? 220 : 130);
+    fxEl.parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 30, life: 0.5 + Math.random() * 0.4, t: 0, hue: (hue + Math.random() * 100) % 360, sz: 1.5 + Math.random() * 2.2 });
+  }
+  fxStart();
+}
+function fxLoop(now) {
+  const ctx = fxEl.ctx, dt = Math.min(0.05, (now - fxEl.last) / 1000); fxEl.last = now;
+  ctx.setTransform(fxEl.dpr, 0, 0, fxEl.dpr, 0, 0);
+  ctx.clearRect(0, 0, fxEl.w, fxEl.h);
+  ctx.globalCompositeOperation = 'lighter';
+  for (let i = fxEl.ripples.length - 1; i >= 0; i--) {
+    const r = fxEl.ripples[i]; r.r += 260 * dt; r.a -= 1.5 * dt;
+    if (r.a <= 0) { fxEl.ripples.splice(i, 1); continue; }
+    ctx.strokeStyle = `hsla(${r.hue},100%,70%,${r.a})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, 6.2832); ctx.stroke();
+  }
+  for (let i = fxEl.parts.length - 1; i >= 0; i--) {
+    const p = fxEl.parts[i]; p.t += dt;
+    if (p.t >= p.life) { fxEl.parts.splice(i, 1); continue; }
+    p.vy += 160 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+    const a = 1 - p.t / p.life;
+    ctx.fillStyle = `hsla(${p.hue},100%,68%,${a})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.sz * a + 0.4, 0, 6.2832); ctx.fill();
+  }
+  if (fxEl.parts.length || fxEl.ripples.length) requestAnimationFrame(fxLoop);
+  else { fxEl.running = false; ctx.clearRect(0, 0, fxEl.w, fxEl.h); }
+}
+
+/* =====================================================================
+   7. UI ヘルパー
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+function h(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+function setText(el, s) { if (el._t !== s) { el.textContent = s; el._t = s; } }
+function flash() { if (!fxOn()) return; const f = $('flash'); f.classList.remove('on'); void f.offsetWidth; f.classList.add('on'); }
+function pulse(el, cls) { if (!fxOn() || !el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); setTimeout(() => el.classList.remove(cls), 700); }
+
+function toast(msg, kind) {
+  const box = $('toasts');
+  while (box.children.length >= 5) box.removeChild(box.firstChild);
+  const t = h('div', 'toast ' + (kind || ''), msg); box.appendChild(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 350); }, kind === 'ach' ? 4500 : 3200);
+}
+
+const modalQueue = []; let modalOpen = false;
+function modal(opts) { return new Promise(res => { modalQueue.push({ opts, res }); pumpModal(); }); }
+function pumpModal() {
+  if (modalOpen || !modalQueue.length) return;
+  modalOpen = true;
+  const { opts, res } = modalQueue.shift();
+  const root = $('modalRoot'), prevFocus = document.activeElement;
+  const back = h('div', 'backdrop'), dlg = h('div', 'dialog');
+  dlg.setAttribute('role', 'dialog'); dlg.setAttribute('aria-modal', 'true'); dlg.setAttribute('aria-label', opts.title);
+  dlg.appendChild(h('h2', '', opts.title));
+  const body = h('div', 'body');
+  if (typeof opts.body === 'string') body.textContent = opts.body; else if (opts.body) body.appendChild(opts.body);
+  dlg.appendChild(body);
+  const btns = h('div', 'btns'); let first = null;
+  const close = v => { document.removeEventListener('keydown', onKey, true); root.innerHTML = ''; modalOpen = false; try { prevFocus && prevFocus.focus && prevFocus.focus(); } catch (e) { /* ignore */ } res(v); pumpModal(); };
+  (opts.actions || [{ label: 'OK', value: true, kind: 'primary' }]).forEach(a => {
+    const b = h('button', 'btn ' + (a.kind || 'plain'), a.label); b.type = 'button';
+    b.addEventListener('click', () => { if (a.keep) { a.onClick && a.onClick(b); } else close(a.value); });
+    btns.appendChild(b); if (!first || a.kind === 'primary') first = first && first._p ? first : b; if (a.kind === 'primary') b._p = true;
+  });
+  const onKey = e => {
+    if (e.key === 'Escape' && opts.dismissible !== false) { e.stopPropagation(); close(null); }
+    if (e.key === 'Tab') { const f = dlg.querySelectorAll('button'); if (f.length) { const a = f[0], z = f[f.length - 1]; if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); } } }
+  };
+  document.addEventListener('keydown', onKey, true);
+  dlg.appendChild(btns); back.appendChild(dlg); root.appendChild(back);
+  if (first) first.focus();
+}
+async function copyText(text, ta) {
+  try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); return true; } } catch (e) { /* fallthrough */ }
+  try { let t = ta; let tmp = false; if (!t) { t = h('textarea'); t.value = text; t.style.cssText = 'position:fixed;left:-999px;top:0'; document.body.appendChild(t); tmp = true; } t.focus(); t.select(); const ok = document.execCommand('copy'); if (tmp) t.remove(); return ok; }
+  catch (e) { return false; }
+}
+
+/* =====================================================================
+   8. 描画 (UI)
+   ===================================================================== */
+const ui = { tab: 'tiers', tierRefs: [], teaser: null, builtTiers: -1, upgRefs: {}, permRefs: {}, stage: -1, anyTier: false, anyUpg: false, lastSlow: 0 };
+
+function makeBuyBtn(act) {
+  const b = h('button', 'btn buy'); b.type = 'button'; b.dataset.act = act;
+  const bl = h('span', 'bl'), bp = h('span', 'bp'); b.append(bl, bp); return { btn: b, bl, bp };
+}
+function buildTierList() {
+  const list = $('tierList'); list.innerHTML = ''; ui.tierRefs = [];
+  for (let i = 0; i <= state.unlockedTier; i++) {
+    const def = tierDef(i), root = h('article', 'card tier'); root.dataset.i = i;
+    const top = h('div', 'card-top');
+    top.appendChild(h('div', 'idx', String(i + 1).padStart(2, '0')));
+    const tt = h('div', 'card-title'); tt.append(h('h3', '', def.name), h('p', 'muted', def.desc)); top.appendChild(tt);
+    const ow = h('div', 'owned'); const ob = h('b', '', '0'); ow.append(h('small', '', '所有'), ob); top.appendChild(ow);
+    const kv = h('div', 'kv'); const k1 = h('span'), k2 = h('span'), k3 = h('span');
+    const uP = h('b'), tP = h('b'), mu = h('b');
+    k1.append('1台 ', uP, '/秒'); k2.append('合計 ', tP, '/秒'); k3.append('倍率 ', mu); kv.append(k1, k2, k3);
+    const ms = h('div', 'ms'); const bar = h('div', 'bar'), fill = h('i'); bar.appendChild(fill); const mt = h('small'); ms.append(bar, mt);
+    const actions = h('div', 'actions'); const buy = makeBuyBtn('buy'), tune = makeBuyBtn('tune'); tune.btn.classList.add('ghost'); actions.append(buy.btn, tune.btn);
+    root.append(top, kv, ms, actions); list.appendChild(root);
+    ui.tierRefs[i] = { root, ob, uP, tP, mu, fill, mt, buy, tune };
+  }
+  const t = h('article', 'card tier locked'); const tt = h('div', 'card-title'); const th = h('h3', '', '???'); const tp = h('p', 'muted'); tt.append(th, tp);
+  const bar = h('div', 'bar'); const fill = h('i'); bar.appendChild(fill); bar.style.marginTop = '8px'; t.append(tt, bar); list.appendChild(t);
+  ui.teaser = { root: t, th, tp, fill }; ui.builtTiers = state.unlockedTier;
+}
+function buildUpgCard(def, kind) {
+  const root = h('article', 'card'); root.dataset.id = def.id; root.dataset.kind = kind;
+  const top = h('div', 'card-top'); top.appendChild(h('div', 'idx', kind === 'perm' ? '★' : '▲'));
+  const tt = h('div', 'card-title'); const hh = h('h3', '', def.name); const pp = h('p', 'muted', def.desc); tt.append(hh, pp); top.appendChild(tt);
+  const ow = h('div', 'owned'); const ob = h('b', '', '0'); ow.append(h('small', '', 'Lv'), ob); top.appendChild(ow);
+  const eff = h('div', 'kv'); const ef = h('span', 'muted'); eff.appendChild(ef);
+  const actions = h('div', 'actions one'); const buy = makeBuyBtn('buy'); actions.appendChild(buy.btn);
+  root.append(top, eff, actions); return { root, hh, pp, ob, ef, buy, def };
+}
+function buildUpgrades() {
+  const list = $('upgList'); list.innerHTML = ''; ui.upgRefs = {};
+  RUN_UPG.forEach(d => { const r = buildUpgCard(d, 'run'); ui.upgRefs[d.id] = r; list.appendChild(r.root); });
+  const pl = $('permList'); pl.innerHTML = ''; ui.permRefs = {};
+  PERM_UPG.forEach(d => { const r = buildUpgCard(d, 'perm'); ui.permRefs[d.id] = r; pl.appendChild(r.root); });
+}
+function renderAch() {
+  const grid = $('achGrid'); grid.innerHTML = '';
+  ACH.forEach(a => {
+    const done = !!state.ach[a.id], el = h('div', 'ach' + (done ? ' done' : ''));
+    el.appendChild(h('div', 'ic', done ? '✓' : '·'));
+    const d = h('div'); d.append(h('b', '', a.name), h('small', '', a.desc())); el.appendChild(d); grid.appendChild(el);
+  });
+  setText($('achSummary'), `解放 ${achCount()} / ${ACH.length} — 現在のボーナス +${achCount() * 2}%`);
+}
+function updateBuyBtn(ref, q, label, money, extraOK) {
+  const ok = q.ok && extraOK !== false;
+  ref.btn.classList.toggle('can', ok); ref.btn.classList.toggle('short', !ok);
+  setText(ref.bl, label);
+  setText(ref.bp, ok ? fmtInt(q.cost) : (extraOK === false ? '要:所有' : 'あと ' + fmtInt(q.cost.sub(money))));
+}
+const bulkLabel = (q, mode) => mode === 'max' ? `×${q.n} (最大)` : `×${q.n}`;
+
+function updateTiers() {
+  const mode = state.settings.bulk, money = state.energy;
+  for (let i = 0; i <= state.unlockedTier; i++) {
+    const r = ui.tierRefs[i]; if (!r) continue;
+    const n = owned(i), def = tierDef(i), c = calc.tier[i] || { mult: ONE, ms: 0 };
+    setText(r.ob, fmtInt(n));
+    const unit = def.prod.mul(c.mult).mul(calc.global);
+    setText(r.uP, fmt(unit)); setText(r.tP, fmt(n ? c.eps.mul(calc.global) : ZERO)); setText(r.mu, '×' + fmt(c.mult.mul(calc.global)));
+    const lo = c.ms === 0 ? 0 : milestoneAt(c.ms - 1), hi = milestoneAt(c.ms);
+    r.fill.style.width = Math.max(0, Math.min(100, (n - lo) / (hi - lo) * 100)).toFixed(1) + '%';
+    setText(r.mt, `あと ${hi - n} 台で 生産 ×2 (到達 ${c.ms} 回)`);
+    const q = quote(def.cost, def.ratio, n, mode, money);
+    updateBuyBtn(r.buy, q, '購入 ' + bulkLabel(q, mode), money);
+    r.root.classList.toggle('afford', q.ok);
+    const tl = state.tuning[i] || 0;
+    const tq = quote(def.tuneBase, def.tuneRatio, tl, mode, money);
+    updateBuyBtn(r.tune, tq, `強化 Lv${tl} ×2`, money, n > 0 ? undefined : false);
+  }
+  const next = state.unlockedTier + 1, nd = tierDef(next), need = nd.cost.mul(0.5);
+  setText(ui.teaser.th, '??? (' + nd.name + ')');
+  setText(ui.teaser.tp, `今回の累計 ${fmt(need)} ENERGY で解放`);
+  const pr = need.m === 0 ? 1 : Math.max(0, Math.min(1, state.runEarned.div(need).toNumber()));
+  ui.teaser.fill.style.width = (pr * 100).toFixed(1) + '%';
+}
+function updateUpgList(refs, defs, levels, money, lifetimeGate) {
+  const mode = state.settings.bulk; let any = false;
+  defs.forEach(d => {
+    const r = refs[d.id], L = levels[d.id];
+    const locked = lifetimeGate && d.unlock && state.totalEarned.cmp(d.unlock) < 0;
+    r.root.classList.toggle('locked', !!locked);
+    setText(r.ob, String(L));
+    if (locked) { setText(r.ef, `累計 ${fmt(d.unlock)} ENERGY で解放`); r.buy.btn.classList.remove('can'); r.buy.btn.classList.add('short'); setText(r.buy.bl, '未解放'); setText(r.buy.bp, '🔒'); r.root.classList.remove('afford'); return; }
+    setText(r.ef, d.eff(L));
+    const q = quote(d.base, d.ratio, L, mode, money);
+    updateBuyBtn(r.buy, q, (d.id in state.upg ? '購入 ' : '購入 ') + bulkLabel(q, mode), money);
+    r.root.classList.toggle('afford', q.ok); if (q.ok) any = true;
+  });
+  return any;
+}
+function updateAscension() {
+  const unlocked = state.ascUnlocked;
+  $('ascLocked').hidden = unlocked; $('ascMain').hidden = !unlocked;
+  setText($('ascReq'), fmt(ASC_UNLOCK));
+  if (!unlocked) {
+    const pr = Math.max(0, Math.min(1, state.totalEarned.log10() / ASC_UNLOCK.log10()));
+    $('ascProg').style.width = (pr * 100).toFixed(1) + '%';
+    setText($('ascProgText'), `${fmt(state.totalEarned)} / ${fmt(ASC_UNLOCK)}`);
+    return;
+  }
+  const g = novaGain();
+  setText($('ascGain'), `+${fmtInt(g)} NOVA`);
+  setText($('ascBank'), fmtInt(state.nova)); setText($('ascRun'), fmt(state.runEarned));
+  $('btnAscend').disabled = g.m === 0;
+  setText($('btnAscend'), g.m === 0 ? '転生には今回の累計 ENERGY が不足しています' : `転生して +${fmtInt(g)} NOVA を獲得`);
+  updateUpgList(ui.permRefs, PERM_UPG, state.perm, state.nova, false);
+}
+function stageInfo() {
+  const e = state.totalEarned.m === 0 ? 0 : state.totalEarned.e;
+  const s = Math.floor(e / 5);
+  return { s, name: STAGES[s] || ('INFINITY +' + (s - STAGES.length + 1)), hue: HUES[s % HUES.length], rings: Math.min(5, 1 + s) };
+}
+function applyStage(silent) {
+  const st = stageInfo();
+  document.documentElement.style.setProperty('--h', st.hue);
+  document.body.dataset.rings = st.rings;
+  setText($('stageChip'), st.name);
+  if (ui.stage !== st.s) { if (ui.stage >= 0 && !silent) { toast(`STAGE UP — ${st.name}`, 'good'); flash(); sfx.mile(); } ui.stage = st.s; }
+}
+function hintText() {
+  const t0 = owned(0);
+  if (state.clicks < 5 && state.energy.cmp(10) < 0 && t0 === 0) return 'コアをクリックして ENERGY を集めよう';
+  if (t0 === 0) { const c = tierDef(0).cost; return state.energy.gte(c) ? '「施設」タブで Pulse Generator を購入しよう！自動で ENERGY が増えます' : `あと ${fmtInt(c.sub(state.energy))} ENERGY で Pulse Generator を購入できます`; }
+  if (state.ascUnlocked && novaGain().cmp(Math.max(5, state.novaTotal.toNumber())) >= 0) return `転生で +${fmtInt(novaGain())} NOVA を獲得できます (転生タブ)`;
+  if (ui.anyTier || ui.anyUpg) return ui.anyTier ? '購入できる施設があります。生産力を伸ばそう' : '購入できる強化があります';
+  if (!state.ascUnlocked) return `次の目標: 累計 ${fmt(ASC_UNLOCK)} ENERGY で「転生」が解放されます`;
+  const na = ACH.find(a => !state.ach[a.id]);
+  return na ? `実績「${na.name}」: ${na.desc()}` : 'すべての実績を達成しました。無限の彼方を目指そう';
+}
+function updateAlerts() {
+  const money = state.energy; let t = false;
+  for (let i = 0; i <= state.unlockedTier; i++) { if (bulkCost(tierDef(i).cost, 1.15, owned(i), 1).cmp(money) <= 0) { t = true; break; } }
+  let u = false;
+  RUN_UPG.forEach(d => { if (!(d.unlock && state.totalEarned.cmp(d.unlock) < 0) && bulkCost(d.base, d.ratio, state.upg[d.id], 1).cmp(money) <= 0) u = true; });
+  ui.anyTier = t; ui.anyUpg = u;
+  const tabs = document.querySelectorAll('#tabs .tab');
+  tabs.forEach(b => {
+    const k = b.dataset.tab; let a = false;
+    if (k === 'tiers') a = t; else if (k === 'upgrades') a = u; else if (k === 'ascension') a = state.ascUnlocked && novaGain().m !== 0 && novaGain().cmp(Math.max(5, state.novaTotal.toNumber())) >= 0;
+    b.dataset.alert = a && ui.tab !== k ? '1' : '0';
+  });
+}
+function renderFast() {
+  setText($('energy'), fmtInt(state.energy));
+  setText($('eps'), '+' + fmt(calc.eps) + ' / 秒');
+}
+function renderSlow() {
+  setText($('stClick'), fmt(calc.clickVal)); setText($('stEps'), fmt(calc.eps));
+  setText($('stTotal'), fmt(state.totalEarned)); setText($('stTime'), fmtClock(state.playTime));
+  setText($('stClicks'), fmtPlain(state.clicks)); setText($('stNova'), `${fmtInt(state.nova)} / ${state.ascensions}`);
+  applyStage(false);
+  if (state.unlockedTier !== ui.builtTiers) buildTierList();
+  updateAlerts();
+  if (ui.tab === 'tiers') updateTiers();
+  else if (ui.tab === 'upgrades') updateUpgList(ui.upgRefs, RUN_UPG, state.upg, state.energy, true);
+  else if (ui.tab === 'ascension') updateAscension();
+  setText($('hint'), hintText());
+}
+function renderAll() { recalc(); applyStage(true); buildTierList(); buildUpgrades(); renderAch(); renderSettings(); renderFast(); renderSlow(); }
+function updateSaveInfo() {
+  const s = state.lastSaved ? '最終保存 ' + fmtDateTime(state.lastSaved).slice(11) : '未保存';
+  setText($('saveInfo'), s); setText($('setSaveInfo'), state.lastSaved ? fmtDateTime(state.lastSaved) : '-');
+}
+function renderSettings() {
+  $('setSound').checked = state.settings.sound; $('setFx').checked = state.settings.fx; $('setFormat').value = state.settings.format;
+  document.body.classList.toggle('no-fx', !state.settings.fx);
+  document.querySelectorAll('#bulk button').forEach(b => b.classList.toggle('on', b.dataset.bulk === state.settings.bulk));
+  updateSaveInfo();
+}
+function setTab(name) {
+  ui.tab = name; document.body.dataset.tab = name;
+  document.querySelectorAll('#tabs .tab').forEach(b => { const on = b.dataset.tab === name; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+  document.querySelectorAll('.tabbody').forEach(p => { p.hidden = p.id !== 'tab-' + name; });
+  if (name === 'ach') renderAch();
+  renderSlow();
+}
+
+/* =====================================================================
+   9. アクション
+   ===================================================================== */
+function doClick(clientX, clientY) {
+  const crit = Math.random() < 0.05;
+  const val = crit ? calc.clickVal.mul(7) : calc.clickVal;
+  earn(val); state.clicks++;
+  const rect = $('stageWrap').getBoundingClientRect();
+  let x = rect.width / 2, y = rect.height / 2;
+  if (clientX != null) { x = clientX - rect.left; y = clientY - rect.top; }
+  fxBurst(x, y, crit ? 2 : 1);
+  if (fxOn() || true) {
+    const fl = $('floats');
+    if (fl.children.length < 12 && fxOn()) {
+      const f = h('div', 'float' + (crit ? ' crit' : ''), '+' + fmt(val)); f.style.left = (x + (Math.random() * 30 - 15)) + 'px'; f.style.top = (y - 10) + 'px';
+      fl.appendChild(f); setTimeout(() => f.remove(), 1000);
+    }
+  }
+  sfx.click(crit);
+  const c = $('core'); c.classList.add('press'); setTimeout(() => c.classList.remove('press'), 80);
+  renderFast();
+}
+function fail(cost, btn) {
+  toast(`ENERGY が足りません (あと ${fmtInt(cost.sub(state.energy))})`, 'bad'); sfx.fail();
+  if (btn) { btn.classList.remove('shake'); void btn.offsetWidth; btn.classList.add('shake'); }
+}
+function buyTier(i, btn) {
+  const def = tierDef(i), n0 = owned(i), q = quote(def.cost, def.ratio, n0, state.settings.bulk, state.energy);
+  if (!q.ok) return fail(q.cost, btn);
+  const before = msCount(n0);
+  state.energy = state.energy.sub(q.cost);
+  while (state.tiers.length <= i) state.tiers.push(0);
+  state.tiers[i] = n0 + q.n;
+  recalc(); sfx.buy(); pulse(ui.tierRefs[i] && ui.tierRefs[i].root, 'bought');
+  if (msCount(state.tiers[i]) > before) { toast(`${def.name}: マイルストーン達成！生産 ×2`, 'good'); sfx.mile(); flash(); }
+  checkUnlocks(); checkAch(); saveSoon(); updateTiers(); renderFast();
+}
+function tuneTier(i, btn) {
+  const def = tierDef(i);
+  if (owned(i) === 0) { toast('施設を購入すると強化できます', 'bad'); sfx.fail(); return; }
+  const L = state.tuning[i] || 0, q = quote(def.tuneBase, def.tuneRatio, L, state.settings.bulk, state.energy);
+  if (!q.ok) return fail(q.cost, btn);
+  state.energy = state.energy.sub(q.cost);
+  while (state.tuning.length <= i) state.tuning.push(0);
+  state.tuning[i] = L + q.n;
+  recalc(); sfx.buy(); flash(); pulse(ui.tierRefs[i] && ui.tierRefs[i].root, 'bought');
+  toast(`${def.name} を強化 (Lv${state.tuning[i]}) — 生産 ×${fmt(D.from(2).pow(q.n))}`, 'good');
+  checkAch(); saveSoon(); updateTiers(); renderFast();
+}
+function buyUpg(def, kind, btn) {
+  const levels = kind === 'perm' ? state.perm : state.upg, money = kind === 'perm' ? state.nova : state.energy;
+  if (kind === 'run' && def.unlock && state.totalEarned.cmp(def.unlock) < 0) { toast('まだ解放されていません', 'bad'); return; }
+  const L = levels[def.id], q = quote(def.base, def.ratio, L, state.settings.bulk, money);
+  if (!q.ok) {
+    toast(`${kind === 'perm' ? 'NOVA' : 'ENERGY'} が足りません (あと ${fmtInt(q.cost.sub(money))})`, 'bad'); sfx.fail();
+    if (btn) { btn.classList.remove('shake'); void btn.offsetWidth; btn.classList.add('shake'); } return;
+  }
+  if (kind === 'perm') state.nova = state.nova.sub(q.cost); else state.energy = state.energy.sub(q.cost);
+  levels[def.id] = L + q.n;
+  recalc(); sfx.buy(); flash(); pulse((kind === 'perm' ? ui.permRefs : ui.upgRefs)[def.id].root, 'bought');
+  toast(`${def.name} Lv${levels[def.id]}`, 'good');
+  checkAch(); saveSoon(); renderFast(); renderSlow();
+}
+function checkUnlocks() {
+  let changed = false, guard = 0;
+  while (guard++ < 5000) {
+    const nd = tierDef(state.unlockedTier + 1);
+    if (state.runEarned.gte(nd.cost.mul(0.5))) { state.unlockedTier++; changed = true; toast(`新しい施設が解放: ${nd.name}`, 'good'); sfx.mile(); flash(); } else break;
+  }
+  if (!state.ascUnlocked && state.totalEarned.gte(ASC_UNLOCK)) { state.ascUnlocked = true; changed = true; toast('「ASCENSION (転生)」が解放されました！', 'ach'); sfx.ach(); flash(); }
+  if (changed) { recalc(); checkAch(); saveSoon(); }
+}
+function checkAch() {
+  let n = 0;
+  for (const a of ACH) if (!state.ach[a.id] && a.test()) { state.ach[a.id] = true; n++; toast(`🏆 実績解除: ${a.name} (+2%)`, 'ach'); }
+  if (n) { recalc(); sfx.ach(); flash(); if (ui.tab === 'ach') renderAch(); saveSoon(); }
+}
+
+async function ascendFlow() {
+  const gain = novaGain();
+  if (gain.m === 0) { toast('今回の累計 ENERGY が不足しています', 'bad'); return; }
+  const b = h('div');
+  b.append(h('p', '', `転生すると +${fmtInt(gain)} NOVA を獲得します。(所持: ${fmtInt(state.nova)} → ${fmtInt(state.nova.add(gain))})`));
+  const a = h('div'); a.append(h('b', '', 'リセットされるもの'));
+  const u1 = h('ul'); ['ENERGY (' + fmtInt(state.energy) + ')', '全施設と施設の強化 (所有 ' + fmtPlain(totalOwned()) + ' 台)', 'Click Amplifier などの通常強化', '今回の累計 ENERGY'].forEach(t => u1.appendChild(h('li', '', t))); a.appendChild(u1);
+  const c = h('div'); c.append(h('b', '', '保持されるもの'));
+  const u2 = h('ul'); ['NOVA と永続強化', '実績・実績ボーナス', '累計統計 (総獲得量・クリック数・プレイ時間)', '解放済みの施設', '設定'].forEach(t => u2.appendChild(h('li', '', t))); c.appendChild(u2);
+  if (state.perm.head > 0) b.append(h('p', 'muted', `Head Start により ${fmt(headStart(state.perm.head))} ENERGY で再開します。`));
+  b.append(a, c);
+  const ok = await modal({ title: '転生しますか？', body: b, actions: [{ label: 'キャンセル', value: false }, { label: '転生する', value: true, kind: 'primary' }] });
+  if (ok !== true) return;
+  doAscend();
+}
+function doAscend() {
+  flushTick();
+  const gain = novaGain(); if (gain.m === 0) return;
+  backupSave();
+  state.nova = state.nova.add(gain); state.novaTotal = state.novaTotal.add(gain); state.ascensions++;
+  state.energy = headStart(state.perm.head); state.runEarned = ZERO;
+  state.tiers = []; state.tuning = []; state.upg = { click: 0, auto: 0, reson: 0, over: 0 };
+  recalc(); buildTierList(); checkAch(); recalc(); sfx.asc(); flash();
+  toast(`ASCENSION — +${fmtInt(gain)} NOVA を獲得！`, 'ach'); saveLocal(); renderSlow(); renderFast(); renderAch();
+}
+
+/* 時間経過 */
+function tick() {
+  const now = Date.now();
+  const dt = (now - state.lastTick) / 1000;
+  if (!(dt > 0)) { state.lastTick = now; return; }
+  state.lastTick = now;
+  if (dt > SLEEP_GAP) { applyOffline(dt); return; }
+  state.playTime += dt;
+  earn(calc.eps.mul(dt));
+}
+function applyOffline(sec) {
+  const used = Math.min(sec, OFFLINE_CAP);
+  const gain = calc.eps.mul(used * OFFLINE_EFF);
+  earn(gain);
+  if (gain.m !== 0) {
+    const b = h('div');
+    b.append(h('p', '', `${fmtDuration(sec)} ぶりのログインです。`), h('p', '', `放置報酬: +${fmtInt(gain)} ENERGY`),
+      h('p', 'muted', `(毎秒生産量の ${OFFLINE_EFF * 100}% を最大 ${OFFLINE_CAP / 3600} 時間分)`));
+    modal({ title: 'おかえりなさい', body: b });
+  }
+}
+
+/* =====================================================================
+   10. 初期化 / イベント
+   ===================================================================== */
+function replaceState(ns) {
+  state = ns; tierCache.length = 0; renderAll();
+}
+function showTutorial() {
+  const b = h('div'); const ol = h('ol');
+  ['中央のコアをクリック (タップ) して ENERGY を集めます。', 'ENERGY が貯まったら「施設」を購入。放置していても毎秒 ENERGY が増えます。',
+    '「強化」「施設の強化」で効率を上げ、一定の進行で「転生」を解放。NOVA による永続強化で、より速く成長できます。',
+    '進行は自動保存されます。別の端末へは「設定」のセーブコードで引き継げます。', '上限はありません。数値は無限に成長し続けます。'].forEach(t => ol.appendChild(h('li', '', t)));
+  b.appendChild(ol);
+  return modal({ title: 'NEON//INFINITY へようこそ', body: b, actions: [{ label: 'はじめる', value: true, kind: 'primary' }] }).then(() => { state.tutorialDone = true; saveSoon(); });
+}
+function showLoadError(res) {
+  try { localStorage.setItem(CORRUPT_KEY, res.raw); } catch (e) { /* ignore */ }
+  let hasBackup = false, backupState = null;
+  try { const raw = localStorage.getItem(BACKUP_KEY); if (raw) { backupState = sanitize(JSON.parse(raw)); hasBackup = true; } } catch (e) { hasBackup = false; }
+  const b = h('div');
+  b.append(h('p', '', 'セーブデータを読み込めませんでした: ' + res.error.message),
+    h('p', 'muted', '破損したデータは別枠に退避済みで、上書きされません。下のボタンで控えをコピーできます。'));
+  const actions = [
+    { label: '破損データをコピー', keep: true, onClick: async btn => { const ok = await copyText(res.raw); btn.textContent = ok ? 'コピーしました' : 'コピー失敗'; } },
+    { label: '新規で開始', value: 'new', kind: hasBackup ? 'plain' : 'primary' }
+  ];
+  if (hasBackup) actions.push({ label: 'バックアップから復元', value: 'backup', kind: 'primary' });
+  return modal({ title: 'セーブデータの読み込みエラー', body: b, actions, dismissible: false }).then(v => { if (v === 'backup' && backupState) { backupState.lastTick = Date.now(); replaceState(backupState); saveLocal(); toast('バックアップから復元しました', 'good'); } });
+}
+
+async function importFlow() {
+  const msg = $('importMsg'); msg.className = 'msg';
+  let ns;
+  try { ns = parseCode($('codeIn').value); } catch (e) { msg.textContent = '読み込めません: ' + e.message; msg.classList.add('bad'); toast('セーブコードを読み込めません', 'bad'); sfx.fail(); return; }
+  msg.textContent = '検証OK。確認ダイアログで読み込みを確定してください。'; msg.classList.add('good');
+  const b = h('div'); b.append(h('p', '', '現在の進行状況は、以下の内容で置き換えられます。'));
+  const t = h('div', 'two');
+  [['総獲得量', fmt(ns.totalEarned)], ['所持 NOVA', fmtInt(ns.nova)], ['転生回数', String(ns.ascensions)], ['プレイ時間', fmtClock(ns.playTime)], ['実績', `${Object.keys(ns.ach).length} / ${ACH.length}`], ['コード内の最終保存', fmtDateTime(ns.lastSaved)]]
+    .forEach(([k, v]) => { const m = h('div', 'mini'); m.append(h('small', '', k), h('b', '', v)); t.appendChild(m); });
+  b.appendChild(t); b.append(h('p', 'muted', '現在のデータは自動でバックアップされます。サウンド・演出などの設定はこの端末の設定が維持されます。'));
+  const ok = await modal({ title: 'セーブコードを読み込みますか？', body: b, actions: [{ label: 'キャンセル', value: false }, { label: '読み込む', value: true, kind: 'primary' }] });
+  if (ok !== true) return;
+  flushTick(); saveLocal(); backupSave();
+  ns.settings = { ...state.settings }; ns.lastTick = Date.now(); ns.tutorialDone = true;
+  replaceState(ns); saveLocal(); $('codeIn').value = ''; msg.textContent = '読み込みが完了しました。'; msg.className = 'msg good';
+  toast('セーブコードを読み込みました', 'good'); flash();
+}
+async function resetFlow() {
+  const b = h('div'); b.append(h('p', '', 'すべての進行状況 (ENERGY・NOVA・実績・統計) が削除されます。この操作は取り消せません。'), h('p', 'muted', '必要なら先にセーブコードを書き出してください。'));
+  const ok = await modal({ title: 'セーブデータをリセット', body: b, actions: [{ label: 'キャンセル', value: false }, { label: 'リセットする', value: true, kind: 'danger' }] });
+  if (ok !== true) return;
+  backupSave();
+  const keep = { ...state.settings };
+  replaceState(newState()); state.settings = keep; renderAll(); saveLocal();
+  toast('セーブデータをリセットしました', 'good'); showTutorial();
+}
+
+function bindEvents() {
+  const core = $('core');
+  core.addEventListener('pointerdown', e => { if (e.button !== undefined && e.button !== 0) return; doClick(e.clientX, e.clientY); });
+  core.addEventListener('click', e => { if (e.detail === 0) doClick(null, null); });
+  core.addEventListener('contextmenu', e => e.preventDefault());
+  $('tabs').addEventListener('click', e => { const b = e.target.closest('.tab'); if (b) setTab(b.dataset.tab); });
+  $('bulk').addEventListener('click', e => { const b = e.target.closest('button[data-bulk]'); if (!b) return; state.settings.bulk = b.dataset.bulk; renderSettings(); renderSlow(); saveSoon(); });
+  $('tierList').addEventListener('click', e => {
+    const b = e.target.closest('button[data-act]'); if (!b) return; const card = b.closest('.card'); const i = Number(card.dataset.i);
+    if (!(i >= 0)) return; if (b.dataset.act === 'buy') buyTier(i, b); else tuneTier(i, b);
+  });
+  $('upgList').addEventListener('click', e => { const b = e.target.closest('button[data-act]'); if (!b) return; const d = RUN_UPG.find(x => x.id === b.closest('.card').dataset.id); if (d) buyUpg(d, 'run', b); });
+  $('permList').addEventListener('click', e => { const b = e.target.closest('button[data-act]'); if (!b) return; const d = PERM_UPG.find(x => x.id === b.closest('.card').dataset.id); if (d) buyUpg(d, 'perm', b); });
+  $('btnAscend').addEventListener('click', ascendFlow);
+  $('btnSave').addEventListener('click', () => { if (saveLocal()) toast('セーブしました', 'good'); });
+  $('btnExport').addEventListener('click', async () => {
+    const code = exportCode(); $('codeOut').value = code; const ok = await copyText(code, $('codeOut'));
+    toast(ok ? 'セーブコードをコピーしました' : 'コードを表示しました。手動でコピーしてください', ok ? 'good' : 'info');
+  });
+  $('btnCopy').addEventListener('click', async () => {
+    if (!$('codeOut').value) $('codeOut').value = exportCode();
+    const ok = await copyText($('codeOut').value, $('codeOut')); toast(ok ? 'コピーしました' : 'コピーに失敗しました。手動で選択してコピーしてください', ok ? 'good' : 'bad');
+  });
+  $('btnImport').addEventListener('click', importFlow);
+  $('btnReset').addEventListener('click', resetFlow);
+  $('btnTutorial').addEventListener('click', showTutorial);
+  $('setSound').addEventListener('change', e => { state.settings.sound = e.target.checked; saveSoon(); if (e.target.checked) sfx.buy(); });
+  $('setFx').addEventListener('change', e => { state.settings.fx = e.target.checked; renderSettings(); saveSoon(); });
+  $('setFormat').addEventListener('change', e => { state.settings.format = e.target.value; renderAch(); renderFast(); renderSlow(); saveSoon(); });
+  window.addEventListener('resize', fxResize);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) saveLocal(); else { tick(); } });
+  window.addEventListener('beforeunload', () => saveLocal());
+  window.addEventListener('pagehide', () => saveLocal());
+  window.addEventListener('focus', () => tick());
+}
+
+function main() {
+  fxEl.canvas = $('fx'); fxEl.ctx = fxEl.canvas.getContext ? fxEl.canvas.getContext('2d') : null;
+  const res = loadLocal();
+  let errRes = null;
+  if (res.status === 'ok') state = res.state;
+  else { state = newState(); if (res.status === 'error') errRes = res; }
+  recalc();
+  bindEvents();
+  renderAll();
+  fxResize();
+  if (res.status === 'unavailable') toast('ローカル保存が利用できません。セーブコードで引き継ぎを行ってください。', 'bad');
+  const boot = async () => {
+    if (errRes) await showLoadError(errRes);
+    tick();
+    checkUnlocks(); checkAch();
+    if (!state.tutorialDone) await showTutorial();
+  };
+  state.lastTick = Math.min(state.lastTick, Date.now());
+  boot();
+  saveLocal();
+  setInterval(tick, 100);
+  setInterval(() => { checkUnlocks(); checkAch(); }, 500);
+  setInterval(() => saveLocal(), 15000);
+  const frame = t => { renderFast(); if (t - ui.lastSlow >= 100) { ui.lastSlow = t; renderSlow(); } requestAnimationFrame(frame); };
+  requestAnimationFrame(frame);
+}
+
+window.__NEON__ = {
+  get state() { return state; }, get calc() { return calc; }, D, ZERO, fmt, tick, recalc, quote, bulkCost, maxAffordable, tierDef,
+  buyTier, tuneTier, doClick, exportCode, parseCode, sanitize, saveLocal, loadLocal, doAscend, novaGain, replaceState, newState, checkUnlocks, checkAch, renderSlow, renderAll, setTab, serialize, earn, applyOffline
+};
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', main); else main();
+})();
+</script>
+</body>
+</html>
